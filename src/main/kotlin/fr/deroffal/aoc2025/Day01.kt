@@ -1,20 +1,43 @@
 package fr.deroffal.aoc2025
 
 import java.io.File
+import kotlin.math.abs
+
+data class Movement(val position: Int, val hitCount: Int)
 
 sealed interface Rotation {
-    fun move(current: Int): Int
+    fun move(current: Int): Movement
 }
 
+private const val SIZE = 100
+
 data class MoveRight(val distance: Int) : Rotation {
-    override fun move(current: Int): Int {
-        return (current + distance).mod(100)
+    override fun move(current: Int): Movement {
+        val position = (current + distance).mod(SIZE)
+        val hits = (current + distance) / SIZE
+        return Movement(position, hits)
     }
 }
 
 data class MoveLeft(val distance: Int) : Rotation {
-    override fun move(current: Int): Int {
-        return (current - distance).mod(100)
+    override fun move(current: Int): Movement {
+        val i = current - distance
+        val position = i.mod(SIZE)
+
+        if (i > 0) {
+            //if we are still > 0 no hit
+            return Movement(position, 0)
+        }
+
+        //moving left, from -1 to -99 it already counts as 1
+        val hits = (abs(i) + SIZE) / SIZE
+
+        if (current == 0) {
+            //if we are already at 0, don't take the first hit into account (it's just the 0)
+            return Movement(position, hits - 1)
+        }
+
+        return Movement(position, hits)
     }
 }
 
@@ -42,14 +65,25 @@ class Day01(val input: List<String>) {
 
     fun getlast() = input
         .map { fromInput(it) }
-        .fold(50) { acc, rotation -> rotation.move(acc) }
+        .fold(50) { acc, rotation -> rotation.move(acc).position }
 
 
-    fun part1(): Int {
-        return input.map { fromInput(it) }
+    fun part1() = input.map { fromInput(it) }
+        .runningFold(50) { acc, rotation ->
+            rotation.move(acc).position
+        }.count { it == 0 }
+
+
+    fun part2(): Int {
+        var count = 0
+
+        input.map { fromInput(it) }
             .runningFold(50) { acc, rotation ->
-                rotation.move(acc)
-            }.count { it == 0 }
+                val movement = rotation.move(acc)
+                count += movement.hitCount
+                return@runningFold movement.position
+            }
+        return count
     }
 
 }
@@ -59,6 +93,7 @@ fun main() {
     println(
         """
         part 1 : ${day01.part1()}
+        part 2 : ${day01.part2()}
     """.trimIndent()
     )
 }

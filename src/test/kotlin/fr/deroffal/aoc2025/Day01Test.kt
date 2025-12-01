@@ -1,5 +1,6 @@
 package fr.deroffal.aoc2025
 
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,34 +25,75 @@ class Day01Test {
         assertEquals(7, moveRight.distance)
     }
 
-    @Test
-    fun `MoveLeft move the cursor to the left`() {
-        val value: Int = fromInput("L30").move(82)
-        assertEquals(52, value)
+    @Nested
+    inner class MoveLeftTest {
+        @Test
+        fun `Move left, simple case`(){
+            val movement = fromInput("L8").move(50)
+            assertEquals(42, movement.position)
+            assertEquals(0, movement.hitCount)
+        }
+
+        @Test
+        fun `Move left, reach 0 once`(){
+            val movement = fromInput("L8").move(8)
+            assertEquals(0, movement.position)
+            assertEquals(1, movement.hitCount)
+        }
+
+        @Test
+        fun `Move left, reach 0 twice`(){
+            val movement = fromInput("L108").move(8)
+            assertEquals(0, movement.position)
+            assertEquals(2, movement.hitCount)
+        }
+
+        @Test
+        fun `Move left, reach 0 twice, and remaining`(){
+            val movement = fromInput("L118").move(8)
+            assertEquals(90, movement.position)
+            assertEquals(2, movement.hitCount)
+        }
+
+        @Test
+        fun `Move left, already at 0 just decreasing`(){
+            val movement = fromInput("L1").move(0)
+            assertEquals(99, movement.position)
+            assertEquals(0, movement.hitCount)
+        }
+
+        @Test
+        fun `Move left, already at 0 with one hit`(){
+            val movement = fromInput("L101").move(0)
+            assertEquals(99, movement.position)
+            assertEquals(1, movement.hitCount)
+        }
     }
 
     @Test
     fun `MoveRight move the cursor to the right`() {
-        val value: Int = fromInput("R14").move(0)
-        assertEquals(14, value)
+        val movement1 = fromInput("R14").move(0)
+        assertEquals(14, movement1.position)
+        assertEquals(0, movement1.hitCount)
+
+        val movement2 = fromInput("R48").move(52)
+        assertEquals(0, movement2.position)
+        assertEquals(1, movement2.hitCount)
+
+        val movement3 = fromInput("R1000").move(50)
+        assertEquals(50, movement3.position)
+        assertEquals(10, movement3.hitCount)
+
+        val movement4 = fromInput("R599").move(0)
+        assertEquals(99, movement4.position)
+        assertEquals(5, movement4.hitCount)
     }
 
-    @Test
-    fun `MoveLeft restarts before 0 to 99`() {
-        val value: Int = fromInput("L68").move(50)
-        assertEquals(82, value)
-    }
-
-    @Test
-    fun `MoveRight restarts after 0 to 1`() {
-        val value: Int = fromInput("R48").move(52)
-        assertEquals(0, value)
-    }
 
     @MethodSource("moveParameters")
     @ParameterizedTest
     fun `part1 - examples`( current: Int,  input: String,  expected: Int) {
-        val value: Int = fromInput(input).move(current)
+        val value = fromInput(input).move(current).position
         assertEquals(expected, value)
     }
 
@@ -70,40 +112,28 @@ class Day01Test {
         Arguments.of(0, "L1", 99),
     )
 
+    val exampleInput = listOf(
+        "L68",
+        "L30",
+        "R48",
+        "L5",
+        "R60",
+        "L55",
+        "L1",
+        "L99",
+        "R14",
+        "L82"
+    )
+
     @Test
     fun `part1 - verify calculation`() {
-        val input = listOf(
-            "L68",
-            "L30",
-            "R48",
-            "L5",
-            "R60",
-            "L55",
-            "L1",
-            "L99",
-            "R14",
-            "L82"
-        )
-        val day01 = Day01(input)
+        val day01 = Day01(exampleInput)
         assertEquals(32, day01.getlast())
     }
 
-
     @Test
     fun `part1 - verify example`() {
-        val input = listOf(
-            "L68",
-            "L30",
-            "R48",
-            "L5",
-            "R60",
-            "L55",
-            "L1",
-            "L99",
-            "R14",
-            "L82"
-        )
-        val day01 = Day01(input)
+        val day01 = Day01(exampleInput)
         assertEquals(3, day01.part1())
     }
 
@@ -111,6 +141,18 @@ class Day01Test {
     fun `part1 - solution`(){
         val day01 = Day01(day01Input)
         assertEquals(1105, day01.part1())
+    }
+
+    @Test
+    fun `part2 - verify example`() {
+        val day01 = Day01(exampleInput)
+        assertEquals(6, day01.part2())
+    }
+
+    @Test
+    fun `part2 - solution`() {
+        val day01 = Day01(day01Input)
+        assertEquals(6599, day01.part2())
     }
 
 }
